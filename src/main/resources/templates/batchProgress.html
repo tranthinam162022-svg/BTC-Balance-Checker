@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Batch Progress</title>
+</head>
+<body>
+<header th:replace="header :: header"></header>
+<h1>Đang xử lý batch</h1>
+<p>Job ID: <span id="jobId" th:text="${jobId}"></span></p>
+<div>
+    <progress id="progress" value="0" max="100"></progress>
+    <span id="percent">0%</span>
+</div>
+<div>
+    <p>Processed: <span id="processed">0</span> / <span id="total">0</span></p>
+    <p>Failed: <span id="failed">0</span></p>
+    <p id="statusMsg"></p>
+</div>
+<div>
+    <button id="cancelBtn">Hủy job</button>
+</div>
+<script>
+    (function(){
+        var jobId = document.getElementById('jobId').innerText.trim();
+        var progressEl = document.getElementById('progress');
+        var percentEl = document.getElementById('percent');
+        var processedEl = document.getElementById('processed');
+        var totalEl = document.getElementById('total');
+        var failedEl = document.getElementById('failed');
+        var statusMsg = document.getElementById('statusMsg');
+        var cancelBtn = document.getElementById('cancelBtn');
+
+        // connect SSE
+        var es = new EventSource('/batch/stream/' + jobId);
+        es.addEventListener('status', function(e) {
+            try {
+                var data = JSON.parse(e.data);
+                var processed = data.processed || 0;
+                var total = data.total || 0;
+                var failed = data.failed || 0;
+                var done = data.done || false;
+                var cancelled = data.cancelled || false;
+                var percent = total === 0 ? 0 : Math.round((processed / total) * 100);
+                processedEl.innerText = processed;
+                totalEl.innerText = total;
+                failedEl.innerText = failed;
+                progressEl.value = percent;
+                percentEl.innerText = percent + '%';
+                if (cancelled) {
+                    statusMsg.innerText = 'Job đã bị hủy';
+                    cancelBtn.disabled = true;
+                    es.close();
+                    window.location = '/batch/result/' + jobId;
+                }
+                if (done && !cancelled) {
+                    es.close();
+                    window.location = '/batch/result/' + jobId;
+                }
+            } catch (err) { console.error(err); }
+        });
+
+        cancelBtn.addEventListener('click', function(){
+            cancelBtn.disabled = true;
+            fetch('/batch/cancel/' + jobId, { method: 'POST' }).then(r => r.json()).then(j => {
+                if (j.cancelled) {
+                    statusMsg.innerText = 'Yêu cầu hủy đã được gửi';
+                } else {
+                    statusMsg.innerText = 'Không tìm thấy job để hủy';
+                }
+            }).catch(e => { console.error(e); cancelBtn.disabled = false; });
+        });
+    })();
+</script>
+</body>
+</html>
