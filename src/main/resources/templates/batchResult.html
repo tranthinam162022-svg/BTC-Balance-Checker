@@ -8,6 +8,10 @@
 <header th:replace="header :: header"></header>
 <h1>Kết quả kiểm tra hàng loạt</h1>
 <p>Có <span th:text="${wallets.size()}"></span> địa chỉ.</p>
+<div>
+    <a th:href="@{'/batch/export/' + ${jobId} + '(format=csv)'}"><button>Export CSV</button></a>
+    <a th:href="@{'/batch/export/' + ${jobId} + '(format=json)'}"><button>Export JSON</button></a>
+</div>
 <table border="1" cellpadding="6" cellspacing="0">
     <tr>
         <th>Địa chỉ</th>
