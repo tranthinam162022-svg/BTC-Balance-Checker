@@ -57,6 +57,29 @@ public class MyRESTController {
         return getTransaction(address, currency, offset);
     }
 
+    @PostMapping("/balance/batch")
+    @Operation(
+            summary = "Wallet batch",
+            description = "Get wallets balance and transactions for a list of addresses"
+    )
+    public List<Wallet> getWalletsBatch(@RequestBody com.freelkee.btcbalancechecker.model.BatchRequest request) {
+        List<String> addresses = request.getAddresses();
+        String currency = request.getCurrency();
+        int offset = request.getOffset();
+
+        return addresses.parallelStream().map(addr -> {
+            try {
+                return getTransaction(addr, (currency == null || currency.isBlank()) ? null : currency, offset);
+            } catch (Exception e) {
+                Wallet w = new Wallet();
+                w.setAddress(addr);
+                w.setAmount(0);
+                w.setDate(new Timestamp(System.currentTimeMillis()));
+                return w;
+            }
+        }).collect(java.util.stream.Collectors.toList());
+    }
+
     private Wallet getTransaction(String address, String currency, int offset) throws IOException, NoSuchFieldException, IllegalAccessException {
         Wallet wallet = new Wallet();
         BlockchainInfoResponse blockchainInfoResponse = btcService.getResponse(address, offset);
