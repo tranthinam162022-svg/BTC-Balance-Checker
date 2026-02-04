@@ -132,7 +132,40 @@ public class MyController {
         if (job == null) return "batch";
         model.addAttribute("wallets", job.getResults());
         model.addAttribute("offset", job.getOffset());
+        model.addAttribute("jobId", jobId);
         return "batchResult";
+    }
+
+    @GetMapping("/batch/export/{jobId}")
+    public org.springframework.http.ResponseEntity<?> exportBatch(@PathVariable String jobId,
+                                                                  @RequestParam(value = "format", defaultValue = "csv") String format) {
+        com.freelkee.btcbalancechecker.model.BatchJob job = batchService.getJob(jobId);
+        if (job == null) return org.springframework.http.ResponseEntity.notFound().build();
+
+        if ("json".equalsIgnoreCase(format)) {
+            return org.springframework.http.ResponseEntity.ok()
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                    .body(job.getResults());
+        }
+
+        // default CSV
+        StringBuilder sb = new StringBuilder();
+        sb.append("address,status,amount,currency,amountInCurrency,date\n");
+        for (String addr : job.getAddresses()) {
+            com.freelkee.btcbalancechecker.model.Wallet w = job.getResultsMap().get(addr);
+            String status = job.getStatuses().getOrDefault(addr, "");
+            String amount = w == null ? "" : String.valueOf(w.getAmount());
+            String currency = w == null ? "" : (w.getCurrency() == null ? "" : w.getCurrency());
+            String amountInCurrency = w == null ? "" : String.valueOf(w.getAmountInCurrency());
+            String date = (w == null || w.getDate() == null) ? "" : w.getDate().toString();
+            sb.append(String.format("%s,%s,%s,%s,%s,%s\n", addr, status, amount, currency, amountInCurrency, date));
+        }
+
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.set(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"batch-" + jobId + ".csv\"");
+        headers.setContentType(org.springframework.http.MediaType.parseMediaType("text/csv"));
+
+        return new org.springframework.http.ResponseEntity<>(sb.toString(), headers, org.springframework.http.HttpStatus.OK);
     }
 
 }
