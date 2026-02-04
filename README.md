@@ -68,6 +68,7 @@ Examples and helper scripts are available in the `scripts/` folder:
 - `scripts/run-batch-curl.sh` — curl examples to call REST batch and upload file.
 - `scripts/run-batch-pwsh.ps1` — PowerShell example for upload/polling notes.
 - `scripts/run-batch-cancel.sh` — example workflow showing how to start and where to cancel.
+- `scripts/export-example.sh` — download CSV/JSON of results for a finished job.
 
 Note: the app queries `blockchain.info` and `blockchain.com` ticker; for bulk requests consider limiting concurrency to avoid rate limiting. If you expect to check many addresses, increase timeouts or reduce `batch.concurrency` in `application.properties`.  
 
