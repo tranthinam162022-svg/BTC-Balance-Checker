@@ -61,6 +61,7 @@
         });
 
         cancelBtn.addEventListener('click', function(){
+            if (!confirm('Bạn có chắc muốn hủy job này không?')) return;
             cancelBtn.disabled = true;
             fetch('/batch/cancel/' + jobId, { method: 'POST' }).then(r => r.json()).then(j => {
                 if (j.cancelled) {
