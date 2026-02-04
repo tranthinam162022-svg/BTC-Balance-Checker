@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Batch Wallet Check</title>
+</head>
+<body>
+<header th:replace="header :: header"></header>
+<h1>Kiểm tra hàng loạt địa chỉ BTC</h1>
+<h2>Kiểm tra bằng dán địa chỉ (như trước)</h2>
+<form action="/processBatch" method="post">
+    <label>Currency (ví dụ: USD) - để trống nếu chỉ cần BTC:</label>
+    <input type="text" name="currency" />
+    <br/>
+    <label>Offset (mặc định 0):</label>
+    <input type="number" name="offset" value="0" />
+    <br/>
+    <label>Danh sách địa chỉ (mỗi địa chỉ trên 1 dòng hoặc cách nhau bằng dấu phẩy):</label>
+    <br/>
+    <textarea name="addresses" rows="10" cols="80" placeholder="1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
+..." required></textarea>
+    <br/>
+    <button type="submit">Kiểm tra</button>
+</form>
+
+<hr/>
+
+<h2>Upload CSV / TXT</h2>
+<form action="/batch/upload" method="post" enctype="multipart/form-data">
+    <label>Currency (ví dụ: USD) - để trống nếu chỉ cần BTC:</label>
+    <input type="text" name="currency" />
+    <br/>
+    <label>Offset (mặc định 0):</label>
+    <input type="number" name="offset" value="0" />
+    <br/>
+    <label>Chọn file CSV hoặc TXT (mỗi địa chỉ trên 1 dòng hoặc cách nhau bằng dấu phẩy):</label>
+    <br/>
+    <input type="file" name="file" accept=".csv,.txt" required />
+    <br/>
+    <button type="submit">Upload và bắt đầu</button>
+</form>
+</body>
+</html>
