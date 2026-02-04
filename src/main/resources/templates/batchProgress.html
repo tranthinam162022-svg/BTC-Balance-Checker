@@ -41,12 +41,28 @@
                 var failed = data.failed || 0;
                 var done = data.done || false;
                 var cancelled = data.cancelled || false;
+                var statuses = data.statuses || {};
                 var percent = total === 0 ? 0 : Math.round((processed / total) * 100);
                 processedEl.innerText = processed;
                 totalEl.innerText = total;
                 failedEl.innerText = failed;
                 progressEl.value = percent;
                 percentEl.innerText = percent + '%';
+
+                // update per-address status list
+                var table = document.getElementById('addrTable');
+                if (table) {
+                    // clear and re-render
+                    table.innerHTML = '<tr><th>Address</th><th>Status</th></tr>';
+                    Object.keys(statuses).forEach(function(a){
+                        var row = document.createElement('tr');
+                        var td1 = document.createElement('td'); td1.innerText = a;
+                        var td2 = document.createElement('td'); td2.innerText = statuses[a];
+                        row.appendChild(td1); row.appendChild(td2);
+                        table.appendChild(row);
+                    });
+                }
+
                 if (cancelled) {
                     statusMsg.innerText = 'Job đã bị hủy';
                     cancelBtn.disabled = true;
